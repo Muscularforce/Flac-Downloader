@@ -8,6 +8,7 @@ An automated Python tool to batch download lossless FLAC music from the Soulseek
 
 - **FLAC Priority**: Searches the Soulseek P2P network and automatically selects lossless `.flac` files first (falls back to `.wav`, `.mp3`, or `.m4a` if FLAC is unavailable).
 - **Playlist Automation**: Just paste your tracklist in `playlist.txt` (`Artist - Title`) and run!
+- **Zero-Config Auto Login**: Automatically logs into slskd using default credentials — no manual API key generation needed!
 - **Batch Processing**: Automatically queues searches, handles timeouts, and adds downloads to `slskd`.
 - **Auto Organizer**: Automatically moves completed audio files into your designated playlist directory (e.g., Desktop or Music folder).
 - **One-Click Windows Launchers**: Double-click `.bat` files for instant running without command line experience.
@@ -20,17 +21,8 @@ An automated Python tool to batch download lossless FLAC music from the Soulseek
    *(Make sure to check **"Add Python to PATH"** during installation)*
 2. **slskd** running on your computer: [Download slskd Releases](https://github.com/slskd/slskd/releases)  
    - Run `slskd.exe` (accessible by default at `http://localhost:5030`).
-   - Log in with your Soulseek credentials in the Web UI *(Default username/password: `slskd` / `slskd`)*.
-   - **How to set your API Key**: `slskd` sets API keys in its config file (`slskd.yml`, located in `%LOCALAPPDATA%\slskd\slskd.yml` on Windows):
-     ```yaml
-     web:
-       authentication:
-         api_keys:
-           downloader:
-             key: 'your_secret_key_here'
-             role: administrator
-     ```
-     *(You can choose any string as your key, e.g. `antigravity1234567890`, save `slskd.yml`, and restart slskd)*.
+   - Log into the slskd Web UI with your Soulseek credentials *(Default Web UI login: `slskd` / `slskd`)*.
+   - **No API key setup is required!** The downloader logs in automatically using default slskd credentials.
 
 ---
 
@@ -42,14 +34,7 @@ Double-click `install_requirements.bat`, or run:
 pip install -r requirements.txt
 ```
 
-### 2. Configure Your API Key
-Open `config.py` in any text editor and paste your API key:
-```python
-API_KEY = "your_slskd_api_key_here"
-```
-*(Alternatively, create a `.env` file with `SLSKD_API_KEY=your_key` or set the system environment variable)*
-
-### 3. Add Songs to Download
+### 2. Add Songs to Download
 Open `playlist.txt` and add your songs (one per line):
 ```text
 Imagine Dragons - Bones
@@ -57,20 +42,24 @@ Sia - Unstoppable
 Alan Walker - Spectre
 ```
 
-### 4. Run!
+### 3. Run!
 - **Standard Downloader**: Double-click `run_downloader.bat` (or run `python downloader.py`).
 - **Batch Download & Move**: Double-click `run_batch_runner.bat` (or run `python batch_runner.py`) — this queues all songs, waits for downloads to finish, and moves them into your `Desktop/AkamoPlaylist` folder!
 
 ---
 
-## ⚙️ Configuration Details (`config.py`)
+## ⚙️ Configuration (Optional)
 
-You can customize the following settings in `config.py` or via `.env`:
+By default, **zero configuration is needed** — it works out of the box with any standard slskd installation!
+
+If you want to customize settings, open `config.py` (or `.env`):
 
 | Setting | Default Value | Description |
 | :--- | :--- | :--- |
 | `SLSKD_URL` | `http://localhost:5030` | Address of your slskd server |
-| `API_KEY` | `YOUR_API_KEY_HERE` | Your slskd API key |
+| `SLSKD_USERNAME` | `slskd` | Your slskd Web UI username |
+| `SLSKD_PASSWORD` | `slskd` | Your slskd Web UI password |
+| `API_KEY` | *(empty)* | Optional API key if configured in `slskd.yml` |
 | `SOURCE_DIR` | `%LOCALAPPDATA%\slskd\downloads` | Directory where slskd writes completed downloads |
 | `TARGET_DIR` | `Desktop/AkamoPlaylist` | Directory where songs are moved after completion |
 
@@ -84,7 +73,7 @@ You can customize the following settings in `config.py` or via `.env`:
 | `batch_runner.py` | Runs `downloader.py`, monitors download progress, and moves completed audio files to your target folder. |
 | `watch_and_move.py` | Background watcher daemon that continuously moves finished tracks as soon as slskd finishes them. |
 | `move_songs.py` | One-shot utility to move any audio files from slskd's downloads folder to your target folder. |
-| `test_search.py` | Simple utility script to test your slskd connection and verify API key functionality. |
+| `test_search.py` | Simple utility script to test your slskd connection and verify API functionality. |
 
 ---
 

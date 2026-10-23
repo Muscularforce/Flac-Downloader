@@ -1,5 +1,6 @@
 import os
 import sys
+import requests
 
 # ---------------------------------------------------------------------------
 # Helper: Simple .env parser (without requiring external python-dotenv)
@@ -20,34 +21,92 @@ def _load_env_file():
 _load_env_file()
 
 # ---------------------------------------------------------------------------
-# SLSKD API Configuration
+# SLSKD Connection & Authentication Configuration
 # ---------------------------------------------------------------------------
-# The URL where your local or remote slskd instance is accessible:
+# Address where your local or remote slskd instance is running:
 SLSKD_URL = os.environ.get("SLSKD_URL", "http://localhost:5030")
 
-# Your slskd API key.
-# Generate one in slskd Web UI: Options -> General -> API Keys
-API_KEY = os.environ.get("SLSKD_API_KEY", "YOUR_API_KEY_HERE")
+# Method 1 (Auto-Login, Recommended): Default slskd Web UI Credentials
+# Every new slskd install defaults to "slskd" / "slskd". If you didn't change
+# them, you don't have to touch anything — it works out of the box!
+SLSKD_USERNAME = os.environ.get("SLSKD_USERNAME", "slskd")
+SLSKD_PASSWORD = os.environ.get("SLSKD_PASSWORD", "slskd")
+
+# Method 2 (Optional): API Key
+# If you configured an API key in slskd.yml, you can specify it here:
+API_KEY = os.environ.get("SLSKD_API_KEY", "")
+
+_cached_token = None
 
 def get_headers():
+    global _cached_token
+
+    # 1. If a custom API key is configured, use it:
+    if API_KEY and API_KEY not in ("YOUR_API_KEY_HERE", ""):
+        return {
+            "X-Api-Key": API_KEY,
+            "Content-Type": "application/json"
+        }
+
+    # 2. If we already obtained a session Bearer token, reuse it:
+    if _cached_token:
+        return {
+            "Authorization": f"Bearer {_cached_token}",
+            "Content-Type": "application/json"
+        }
+
+    # 3. Otherwise, automatically log in via session endpoint using username & password:
+    try:
+        session_url = f"{SLSKD_URL}/api/v0/session"
+        res = requests.post(
+            session_url,
+            json={"username": SLSKD_USERNAME, "password": SLSKD_PASSWORD},
+            timeout=5
+        )
+        if res.status_code == 200:
+            token = res.json().get("token")
+            if token:
+                _cached_token = token
+                return {
+                    "Authorization": f"Bearer {_cached_token}",
+                    "Content-Type": "application/json"
+                }
+    except Exception:
+        pass
+
+    # 4. Fallback for unauthenticated instances
     return {
-        "X-Api-Key": API_KEY,
         "Content-Type": "application/json"
     }
 
 def validate_config():
-    """Validates that the user has configured an API key."""
-    if not API_KEY or API_KEY == "YOUR_API_KEY_HERE":
+    """Validates connectivity and authentication with slskd before starting."""
+    try:
+        test_url = f"{SLSKD_URL}/api/v0/application"
+        res = requests.get(test_url, headers=get_headers(), timeout=5)
+        if res.status_code in (200, 204):
+            return True
+        elif res.status_code in (401, 403):
+            print("=" * 65)
+            print("[!] Authentication Failed for slskd")
+            print("=" * 65)
+            print("Could not log in to slskd automatically.")
+            print("Default login is username: 'slskd', password: 'slskd'.")
+            print("If you changed your credentials, update them in 'config.py':")
+            print("  - SLSKD_USERNAME = 'your_username'")
+            print("  - SLSKD_PASSWORD = 'your_password'")
+            print("Or set your API key in 'config.py':")
+            print("  - API_KEY = 'your_api_key'")
+            print("=" * 65)
+            sys.exit(1)
+        else:
+            print(f"[!] Notice: slskd returned HTTP {res.status_code}")
+    except requests.exceptions.ConnectionError:
         print("=" * 65)
-        print("[!] ERROR: slskd API Key is not configured.")
+        print("[!] Cannot connect to slskd")
         print("=" * 65)
-        print("Please configure your API key by doing ONE of the following:")
-        print("  1. Open 'config.py' and set API_KEY = 'your_key_here'")
-        print("  2. Create a '.env' file with: SLSKD_API_KEY=your_key_here")
-        print("  3. Set the environment variable: SLSKD_API_KEY=your_key_here")
-        print("\nHow to get a key:")
-        print("  Open your slskd Web UI (http://localhost:5030)")
-        print("  Go to: Options -> General -> API Keys and generate one.")
+        print(f"Could not connect to slskd at: {SLSKD_URL}")
+        print("Please make sure slskd is running (e.g., launch slskd.exe).")
         print("=" * 65)
         sys.exit(1)
 
