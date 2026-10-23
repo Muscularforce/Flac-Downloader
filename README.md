@@ -4,11 +4,12 @@ This is a Python script that automates downloading a list of songs in FLAC forma
 
 ## Prerequisites
 
-1. **Python 3.x** installed.
+1. **Python 3.x** needs to be installed (https://www.python.org/downloads/).
 2. **slskd** running on your PC. `slskd` is a modern headless Soulseek client that provides the API we need to talk to the network.
    * Download and run `slskd` from [here](https://github.com/slskd/slskd/releases).
    * Once it is running (usually accessible at `http://localhost:5030`), go to its Web UI.
    * Log in with your Soulseek credentials.
+   *Default username and password are both slskd*
    * Go to **Options -> General -> API Keys** and generate a new API key.
 
 ## Setup
