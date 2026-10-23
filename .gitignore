@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -17,6 +17,10 @@ ENV/
 *.aac
 *.ogg
 *.opus
+
+# Release archives
+*.zip
+*.tar.gz
 
 # Test outputs & logs
 debug_res.json

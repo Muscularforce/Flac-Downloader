@@ -1,35 +1,39 @@
-import requests, time, json
+import time
+import requests
+from config import SLSKD_URL, get_headers, validate_config
 
-SLSKD_URL = "http://localhost:5030"
-API_KEY = "antigravity1234567890"
+validate_config()
 
-def get_headers():
-    return {
-        "X-Api-Key": API_KEY,
-        "Content-Type": "application/json"
-    }
-
-print("Starting search...")
+print("🔍 Testing connection to slskd API...")
 url = f"{SLSKD_URL}/api/v0/searches"
 data = {"searchText": "Imagine Dragons - Believer"}
-response = requests.post(url, json=data, headers=get_headers())
-search_id = response.json().get("id")
-print(f"Search ID: {search_id}")
 
-time.sleep(5)
-responses_url = f"{url}/{search_id}/responses"
-response = requests.get(responses_url, headers=get_headers())
+try:
+    response = requests.post(url, json=data, headers=get_headers())
+    if response.status_code != 200:
+        print(f"❌ API error: {response.text}")
+        exit(1)
+        
+    search_id = response.json().get("id")
+    print(f"📡 Search started successfully with ID: {search_id}")
+    print("⏳ Waiting 5 seconds for results...")
+    time.sleep(5)
 
-responses_data = response.json()
-print(f"Fetched {len(responses_data)} responses")
+    responses_url = f"{url}/{search_id}/responses"
+    response = requests.get(responses_url, headers=get_headers())
+    responses_data = response.json()
+    print(f"✅ Fetched {len(responses_data)} peer response(s)")
 
-flac_files = []
-for res in responses_data:
-    for file_info in res.get("files", []):
-        filename = file_info.get("filename", "").lower()
-        if filename.endswith(".flac"):
-            flac_files.append(filename)
+    flac_count = 0
+    for res in responses_data:
+        for file_info in res.get("files", []):
+            filename = file_info.get("filename", "").lower()
+            if filename.endswith(".flac"):
+                flac_count += 1
+                if flac_count == 1:
+                    print(f"✨ Example FLAC found: {file_info.get('filename')}")
 
-print(f"Found {len(flac_files)} flac files.")
-if flac_files:
-    print("Example:", flac_files[0])
+    print(f"📊 Total FLAC files found: {flac_count}")
+    print("🎉 SLSKD connection and search test passed!")
+except requests.exceptions.ConnectionError:
+    print("❌ Could not connect to slskd. Please check that slskd is running at", SLSKD_URL)

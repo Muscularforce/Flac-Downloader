@@ -1,7 +1,12 @@
+# ===================================================================
+# Soulseek FLAC Downloader — Playlist
+# ===================================================================
+# Enter one song per line.
+# Format: Artist - Track Title (best format for search accuracy)
+# Lines starting with # are ignored.
+# ===================================================================
+
 Imagine Dragons - Bones
 Sia - Unstoppable
 Alan Walker - Spectre
 Imagine Dragons - Demons
-Elton John Dua Lipa - Cold Heart PNAU Remix
-Imagine Dragons - Thunder
-King Gnu - AIZO

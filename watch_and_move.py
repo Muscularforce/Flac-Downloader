@@ -1,29 +1,37 @@
 import os
 import shutil
 import time
+from config import SOURCE_DIR, TARGET_DIR, PREFERRED_EXTENSIONS
 
-source_dir = r"C:\Users\Jovan Fernandes\AppData\Local\slskd\downloads"
-target_dir = r"C:\Users\Jovan Fernandes\Desktop\AkamoPlaylist"
+print("=" * 60)
+print("👀 FLAC Downloader — Watch & Move Daemon")
+print(f"📁 Watching: {SOURCE_DIR}")
+print(f"🎯 Target  : {TARGET_DIR}")
+print("Press Ctrl+C to stop.")
+print("=" * 60)
 
-print("Starting background watch to move completed songs...")
+os.makedirs(TARGET_DIR, exist_ok=True)
+
 while True:
-    for root, dirs, files in os.walk(source_dir):
-        for file in files:
-            if file.endswith(('.flac', '.mp3', '.wav', '.m4a')):
-                src = os.path.join(root, file)
-                dst = os.path.join(target_dir, file)
-                # handle duplicates
-                base, ext = os.path.splitext(file)
-                counter = 1
-                while os.path.exists(dst):
-                    dst = os.path.join(target_dir, f"{base}_{counter}{ext}")
-                    counter += 1
-                
-                try:
-                    shutil.move(src, dst)
-                    print(f"Moved {file}")
-                except Exception as e:
-                    # Ignore errors, file might be still downloading and locked by slskd
-                    pass
+    if os.path.exists(SOURCE_DIR):
+        for root, dirs, files in os.walk(SOURCE_DIR):
+            for file in files:
+                if file.lower().endswith(tuple(PREFERRED_EXTENSIONS)):
+                    src = os.path.join(root, file)
+                    dst = os.path.join(TARGET_DIR, file)
+                    
+                    # Handle duplicate filenames
+                    base, ext = os.path.splitext(file)
+                    counter = 1
+                    while os.path.exists(dst):
+                        dst = os.path.join(TARGET_DIR, f"{base}_{counter}{ext}")
+                        counter += 1
+                    
+                    try:
+                        shutil.move(src, dst)
+                        print(f"  -> Moved completed file: {file}")
+                    except Exception:
+                        # File might still be downloading or locked by slskd
+                        pass
     
-    time.sleep(30)
+    time.sleep(15)
