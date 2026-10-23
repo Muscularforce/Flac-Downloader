@@ -20,8 +20,17 @@ An automated Python tool to batch download lossless FLAC music from the Soulseek
    *(Make sure to check **"Add Python to PATH"** during installation)*
 2. **slskd** running on your computer: [Download slskd Releases](https://github.com/slskd/slskd/releases)  
    - Run `slskd.exe` (accessible by default at `http://localhost:5030`).
-   - Log in with your Soulseek credentials in the Web UI. *(Default username/password: `slskd` / `slskd`)*
-   - Go to **Options ➔ General ➔ API Keys** and generate a new API key.
+   - Log in with your Soulseek credentials in the Web UI *(Default username/password: `slskd` / `slskd`)*.
+   - **How to set your API Key**: `slskd` sets API keys in its config file (`slskd.yml`, located in `%LOCALAPPDATA%\slskd\slskd.yml` on Windows):
+     ```yaml
+     web:
+       authentication:
+         api_keys:
+           downloader:
+             key: 'your_secret_key_here'
+             role: administrator
+     ```
+     *(You can choose any string as your key, e.g. `antigravity1234567890`, save `slskd.yml`, and restart slskd)*.
 
 ---
 
