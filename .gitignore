@@ -1,0 +1,30 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.env
+
+# Audio and media files
+*.flac
+*.mp3
+*.wav
+*.m4a
+*.aac
+*.ogg
+*.opus
+
+# Test outputs & logs
+debug_res.json
+search_results.json
+*.log
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
